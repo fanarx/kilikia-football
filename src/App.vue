@@ -1,28 +1,49 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+  <main>
+    <navbar :user="user"></navbar>
+    <div class="pt-20">
+      <player-vote :user="user" />
+    </div>
+  </main>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import { useClient } from 'villus';
+import useAuth from './compositions/useAuth';
+import Navbar from './components/Navbar';
+import PlayerVote from './components/PlayerVote';
+import { SubscriptionClient } from 'subscriptions-transport-ws';
 
 export default {
-  name: 'App',
   components: {
-    HelloWorld
-  }
-}
+    Navbar,
+    PlayerVote,
+  },
+  setup() {
+    const subscriptionClient = new SubscriptionClient(process.env.VUE_APP_GRAPH_QL_URL_WS, { reconnect: true });
+
+    useClient({
+      url: process.env.VUE_APP_GRAPH_QL_URL,
+      subscriptionForwarder: (op) => subscriptionClient.request(op),
+      context: () => {
+        const token = localStorage.getItem('token');
+        return {
+          fetchOptions: {
+            headers: {
+              ...(token ? { authorization: `Bearer ${token}` } : {}),
+            },
+          },
+        };
+      },
+    });
+
+    const { user } = useAuth();
+
+    return {
+      user,
+    };
+  },
+};
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<style scoped></style>

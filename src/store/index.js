@@ -1,15 +1,30 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex';
 
-Vue.use(Vuex)
+const state = {
+  users: [],
+  count: 0,
+};
 
-export default new Vuex.Store({
-  state: {
+const mutations = {
+  increment(state) {
+    state.count++;
   },
-  mutations: {
+  decrement(state) {
+    state.count--;
   },
-  actions: {
+  setUsers(state, users) {
+    state.users = users;
   },
-  modules: {
-  }
-})
+  makeUserConfirmed(state, { userId, userName }) {
+    console.log('***: makeUserConfirmed -> { userId, userName }', { userId, userName });
+    const confirmedUserIndex = state.users.findIndex((user) => user.name === userName);
+
+    state.users[confirmedUserIndex].is_confirmed = true;
+    state.users[confirmedUserIndex].id = userId;
+  },
+};
+
+export default createStore({
+  state,
+  mutations,
+});

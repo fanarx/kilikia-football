@@ -1,10 +1,19 @@
-import Vue from 'vue'
-import App from './App.vue'
-import store from './store'
+import { createApp } from 'vue';
+import App from './App.vue';
+import store from './store';
 
-Vue.config.productionTip = false
+//import './directives/clickOutside.js';
+import './assets/css/tailwind.css';
 
-new Vue({
-  store,
-  render: h => h(App)
-}).$mount('#app')
+// createApp({
+//   store,
+//   render: h => h(App)
+// }).mount('#app');
+if ('serviceWorker' in navigator) {
+  // sw.js can literally be empty, but must exist
+  navigator.serviceWorker.register('/sw.js');
+}
+
+const app = createApp(App);
+app.use(store);
+app.mount('#app');
