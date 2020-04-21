@@ -1,29 +1,32 @@
 <template>
-  <ul v-if="votes && votes.votes">
-    <li
-      class="flex w-full h-12 cursor-pointer border-b border-gray-300"
-      v-for="vote in votes.votes"
-      :key="vote.id + vote.vote"
-    >
-      <span class="w-2/5 flex items-center capitalize font-normal">
-        {{ vote.user.name }}
-      </span>
-      <span class="w-3/5">
-        <vote-row @vote="onVoteUpdate" :vote="vote" />
-      </span>
-    </li>
-    <li v-if="user && !hasUserVoted" class="flex w-full h-12 cursor-pointer border-b border-gray-300">
-      <span class="w-2/5 flex items-center capitalize font-normal">
-        {{ user.email.split('@')[0] }}
-      </span>
-      <span class="w-3/5">
-        <vote-row
-          @vote="onVoteCreate"
-          :vote="{ vote: createVoteInput, user: { name: user.email.split('@')[0], id: user.uid } }"
-        />
-      </span>
-    </li>
-  </ul>
+  <div>
+    <span class="text-orange-600 text-lg font-semibold mb-2">Հիմնական</span>
+    <ul v-if="votes && votes.votes">
+      <li
+        class="flex w-full h-12 cursor-pointer border-b border-gray-300"
+        v-for="vote in votes.votes"
+        :key="vote.id + vote.vote"
+      >
+        <span class="w-2/5 flex items-center capitalize font-normal">
+          {{ vote.user.name }}
+        </span>
+        <span class="w-3/5">
+          <vote-row @vote="onVoteUpdate" :vote="vote" />
+        </span>
+      </li>
+      <li v-if="user && !hasUserVoted" class="flex w-full h-12 cursor-pointer border-b border-gray-300">
+        <span class="w-2/5 flex items-center capitalize font-normal">
+          {{ user.email.split('@')[0] }}
+        </span>
+        <span class="w-3/5">
+          <vote-row
+            @vote="onVoteCreate"
+            :vote="{ vote: createVoteInput, user: { name: user.email.split('@')[0], id: user.uid } }"
+          />
+        </span>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script>

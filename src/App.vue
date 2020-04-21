@@ -3,6 +3,7 @@
     <navbar :user="user"></navbar>
     <div class="pt-20">
       <player-vote :user="user" />
+      <other-player-vote :user="user" />
     </div>
   </main>
 </template>
@@ -12,12 +13,14 @@ import { useClient } from 'villus';
 import useAuth from './compositions/useAuth';
 import Navbar from './components/Navbar';
 import PlayerVote from './components/PlayerVote';
+import OtherPlayerVote from './components/OtherPlayerVote';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 
 export default {
   components: {
     Navbar,
     PlayerVote,
+    OtherPlayerVote,
   },
   setup() {
     const subscriptionClient = new SubscriptionClient(process.env.VUE_APP_GRAPH_QL_URL_WS, { reconnect: true });
