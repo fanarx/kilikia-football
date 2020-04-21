@@ -10,3 +10,18 @@ subscription subscribeToVotes {
   }
 }
 `;
+
+export const SUBSCRIBE_TO_OTHER_PLAYERS = `
+    subscription subscribeToOtherPlayers {
+      otherPlayers(order_by: {created_at: asc}) {
+        id
+        name
+        vote
+        created_at
+        invitedBy {
+          id
+          name
+        }
+      }
+    }
+`;

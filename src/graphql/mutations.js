@@ -25,7 +25,18 @@ export const UPDATE_VOTES_BY_PK = `
   }
 `;
 
-export const UPDATE_OTHER_PLAYER_BY_PK = `
+export const INSERT_OTHER_PLAYERS_ONE = `
+  mutation insert_otherPlayers_one($name: String!, $vote: String!) {
+    insert_otherPlayers_one(object: {name: $name, vote: $vote}) {
+      invitedBy {
+        id
+        name
+      }
+    }
+  }
+`;
+
+export const UPDATE_OTHER_PLAYERS_BY_PK = `
   mutation update_otherPlayers_by_pk($id: Int!, $vote: String!) {
     update_otherPlayers_by_pk(pk_columns: {id: $id}, _set: {vote: $vote}) {
       id

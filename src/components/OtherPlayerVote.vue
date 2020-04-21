@@ -1,14 +1,14 @@
 <template>
-  <div v-click-outside="closeAddPlayerBox" class="flex flex-col mt-10">
+  <div class="flex flex-col mt-10">
     <!-- <div>
       <pre>{{ JSON.stringify(user, null, 2) }}</pre>
     </div> -->
 
-    <div class="flex mb-2">
-      <div class="flex cursor-pointer items-center" @click="toggleAddPlayerBox">
+    <div v-click-outside="closeAddPlayerBox" class="flex mb-2">
+      <div class="flex cursor-pointer items-center" @click="(e) => e.stopPropagation() || toggleAddPlayerBox()">
         <div class="text-orange-600 text-lg font-semibold">Կողքից</div>
 
-        <icon-base @click="isAddPlayerBoxOpen" class="w-6 h-6 ml-2" icon-name="add player">
+        <icon-base class="w-6 h-6 ml-2" icon-name="add player">
           <icon-minus-active v-if="isAddPlayerBoxOpen" />
           <icon-plus-active v-else />
         </icon-base>
@@ -17,17 +17,14 @@
     </div>
 
     <div
-      v-if="isAddPlayerBoxOpen"
       @click="(e) => e.stopPropagation()"
-      class="flex w-full absolute mt-8 p-2 bg-white border border-gray-400 z-40"
+      v-if="isAddPlayerBoxOpen"
+      class="flex w-full absolute mt-8 p-2 bg-white border border-gray-400 z-40 bg-orange-700"
     >
       <span class="w-2/5">
         <input
-          @click="
-            () => {
-              addPlayer.vote = null;
-            }
-          "
+          @click="() => (addPlayer.vote = null)"
+          :disabled="isLoading"
           class="w-4/5 border py-2 px-3 text-grey-darkest w-32"
           type="text"
           v-model="addPlayer.name"
@@ -35,7 +32,7 @@
         />
       </span>
       <span class="flex w-3/5 relative">
-        <vote-row @vote="(details) => handleVoteCreate(details)" :vote="{ vote: addPlayer.vote }" />
+        <vote-row @vote="handleAddOtherPlayer" :vote="{ vote: addPlayer.vote }" />
         <div
           v-if="isLoading"
           class="flex items-center justify-center bg-white w-full h-full
@@ -58,15 +55,7 @@
           {{ otherPlayer.name }}
         </span>
         <span class="w-3/5 flex relative">
-          <vote-row
-            :vote="{ vote: otherPlayer.vote }"
-            @vote="
-              (details) =>
-                user &&
-                otherPlayer.invitedBy.name === user.email.split('@')[0] &&
-                handleVoteUpdate(otherPlayer, details)
-            "
-          />
+          <vote-row :vote="{ vote: otherPlayer.vote }" @vote="(vote) => handleVoteUpdate(otherPlayer, vote)" />
           <span class="ml-auto font-thin text-gray-600 text-sm self-end capitalize">
             {{ otherPlayer.invitedBy.name }}
           </span>
@@ -91,7 +80,8 @@
 <script>
 import { reactive, ref, watchEffect } from 'vue';
 import { useSubscription, useMutation } from 'villus';
-import { UPDATE_OTHER_PLAYER_BY_PK } from '../graphql/mutations';
+import { UPDATE_OTHER_PLAYERS_BY_PK, INSERT_OTHER_PLAYERS_ONE } from '../graphql/mutations';
+import { SUBSCRIBE_TO_OTHER_PLAYERS } from '../graphql/subscribtions';
 import { ClickOutside } from '../directives/clickOutside';
 import IconBase from '../components/IconBase';
 import VoteRow from '../components/VoteRow';
@@ -101,20 +91,6 @@ import IconPlusActive from './icons/IconPlusActive';
 import IconCloseRed from './icons/IconCloseRed';
 import IconSpinnerBlue from './icons/IconSpinnerBlue';
 
-const SUBSCRIBE_TO_OTHER_PLAYERS = `
-    subscription subscribeToOtherPlayers {
-      otherPlayers {
-        id
-        name
-        vote
-        created_at
-        invitedBy {
-          id
-          name
-        }
-      }
-    }
-`;
 export default {
   props: ['user'],
   components: {
@@ -134,8 +110,17 @@ export default {
     });
 
     const { execute: executeOtherPlayerUpdate, error: updateOtherPlayerError } = useMutation({
-      query: UPDATE_OTHER_PLAYER_BY_PK,
+      query: UPDATE_OTHER_PLAYERS_BY_PK,
     });
+
+    const {
+      data: insertOtherPlayerData,
+      execute: executeInsertOtherPlayer,
+      error: insertOtherPlayerError,
+    } = useMutation({
+      query: INSERT_OTHER_PLAYERS_ONE,
+    });
+
     const isAddPlayerBoxOpen = ref(false);
     const isLoading = ref(false);
     let addPlayer = reactive({
@@ -145,30 +130,41 @@ export default {
 
     let backupOtherPlayersSub = [];
 
+    function toggleAddPlayerBox() {
+      isAddPlayerBoxOpen.value = !isAddPlayerBoxOpen.value;
+      if (!isAddPlayerBoxOpen.value) {
+        addPlayer.name = null;
+        addPlayer.vote = null;
+      }
+    }
+
     function closeAddPlayerBox() {
       isAddPlayerBoxOpen.value = false;
       addPlayer.name = null;
       addPlayer.vote = null;
     }
 
-    function isAddPlayerInvalid(addPlayer) {
-      return addPlayer.name == null || addPlayer.name === '' || addPlayer.vote == null;
-    }
-
-    function handleAddPlayer() {
-      if (isAddPlayerInvalid(addPlayer)) return;
-    }
-
     watchEffect(() => {
-      // if (otherPlayersSub) {
-      // }
-
       if (updateOtherPlayerError.value) {
         otherPlayersSub.value.otherPlayers = backupOtherPlayersSub;
+      }
+
+      if (insertOtherPlayerData.value) {
+        addPlayer.name = null;
+        addPlayer.vote = null;
+        isLoading.value = false;
+        isAddPlayerBoxOpen.value = false;
+      }
+
+      if (insertOtherPlayerError.value) {
+        isLoading.value = false;
       }
     });
 
     function handleVoteUpdate(otherPlayer, { vote }) {
+      if (!props.user) return;
+      if (otherPlayer.invitedBy.name !== props.user.email.split('@')[0]) return;
+
       const updateOtherPlayerInput = {
         ...otherPlayer,
         vote,
@@ -194,14 +190,27 @@ export default {
       otherPlayersSub.value.otherPlayers = updatedOtherPlayers;
     }
 
+    function isAddPlayerInvalid(addPlayer) {
+      return addPlayer.name == null || addPlayer.name.trim() === '' || addPlayer.vote == null;
+    }
+
+    function handleAddOtherPlayer({ vote }) {
+      addPlayer.vote = vote;
+      if (isAddPlayerInvalid(addPlayer)) return;
+
+      isLoading.value = true;
+      executeInsertOtherPlayer(addPlayer);
+    }
+
     return {
       emit,
       addPlayer,
       isLoading,
       isAddPlayerBoxOpen,
       closeAddPlayerBox,
-      handleAddPlayer,
+      toggleAddPlayerBox,
       handleVoteUpdate,
+      handleAddOtherPlayer,
       otherPlayers: otherPlayersSub,
     };
   },
