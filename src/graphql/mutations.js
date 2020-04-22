@@ -50,3 +50,18 @@ export const UPDATE_OTHER_PLAYERS_BY_PK = `
     }
   }
 `;
+
+export const DELETE_OTHER_PLAYERS_BY_PK = `
+  mutation delete_otherPlayers_by_pk($id: Int!) {
+    delete_otherPlayers_by_pk(id: $id) {
+      id
+      name
+      vote
+      invitedBy {
+        id
+        name
+      }
+
+    }
+  }
+`;

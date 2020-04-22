@@ -51,7 +51,7 @@
         :key="otherPlayer.id"
         class="flex w-full h-12 border-b border-gray-300"
       >
-        <span class="w-2/5 flex items-center font-normal">
+        <span class="w-2/5 flex items-center font-normal capitalize">
           {{ otherPlayer.name }}
         </span>
         <span class="w-3/5 flex relative">
@@ -62,9 +62,7 @@
           <span class="absolute top-0 right-0 mt-1">
             <icon-base
               v-if="user && otherPlayer.invitedBy.name === user.email.split('@')[0]"
-              @click="
-                () => otherPlayer.invitedBy.name === user.email.split('@')[0] && handleOtherPlayerDelete(otherPlayer)
-              "
+              @click="() => handleOtherPlayerDelete(otherPlayer)"
               class="w-6 h-6 cursor-pointer"
               icon-name="delete"
             >
@@ -80,7 +78,7 @@
 <script>
 import { reactive, ref, watchEffect } from 'vue';
 import { useSubscription, useMutation } from 'villus';
-import { UPDATE_OTHER_PLAYERS_BY_PK, INSERT_OTHER_PLAYERS_ONE } from '../graphql/mutations';
+import { UPDATE_OTHER_PLAYERS_BY_PK, DELETE_OTHER_PLAYERS_BY_PK, INSERT_OTHER_PLAYERS_ONE } from '../graphql/mutations';
 import { SUBSCRIBE_TO_OTHER_PLAYERS } from '../graphql/subscribtions';
 import { ClickOutside } from '../directives/clickOutside';
 import IconBase from '../components/IconBase';
@@ -111,6 +109,10 @@ export default {
 
     const { execute: executeOtherPlayerUpdate, error: updateOtherPlayerError } = useMutation({
       query: UPDATE_OTHER_PLAYERS_BY_PK,
+    });
+
+    const { execute: executeOtherPlayerDelete, error: deleteOtherPlayerError } = useMutation({
+      query: DELETE_OTHER_PLAYERS_BY_PK,
     });
 
     const {
@@ -145,7 +147,7 @@ export default {
     }
 
     watchEffect(() => {
-      if (updateOtherPlayerError.value) {
+      if (updateOtherPlayerError.value || deleteOtherPlayerError.value) {
         otherPlayersSub.value.otherPlayers = backupOtherPlayersSub;
       }
 
@@ -190,6 +192,19 @@ export default {
       otherPlayersSub.value.otherPlayers = updatedOtherPlayers;
     }
 
+    function handleOtherPlayerDelete(otherPlayer) {
+      backupOtherPlayersSub = [...otherPlayersSub.value.otherPlayers];
+
+      const deleteOtherPlayerInput = {
+        id: otherPlayer.id,
+      };
+
+      const updatedOtherPlayers = otherPlayersSub.value.otherPlayers.filter((player) => player.id !== otherPlayer.id);
+      otherPlayersSub.value.otherPlayers = updatedOtherPlayers;
+
+      executeOtherPlayerDelete(deleteOtherPlayerInput);
+    }
+
     function isAddPlayerInvalid(addPlayer) {
       return addPlayer.name == null || addPlayer.name.trim() === '' || addPlayer.vote == null;
     }
@@ -210,6 +225,7 @@ export default {
       closeAddPlayerBox,
       toggleAddPlayerBox,
       handleVoteUpdate,
+      handleOtherPlayerDelete,
       handleAddOtherPlayer,
       otherPlayers: otherPlayersSub,
     };
