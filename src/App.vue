@@ -2,6 +2,7 @@
   <main>
     <navbar :user="user"></navbar>
     <div class="pt-20">
+      <vote-counter />
       <player-vote :user="user" />
       <other-player-vote :user="user" />
     </div>
@@ -12,6 +13,7 @@
 import { useClient } from 'villus';
 import useAuth from './compositions/useAuth';
 import Navbar from './components/Navbar';
+import VoteCounter from './components/VoteCounter';
 import PlayerVote from './components/PlayerVote';
 import OtherPlayerVote from './components/OtherPlayerVote';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
@@ -21,6 +23,7 @@ export default {
     Navbar,
     PlayerVote,
     OtherPlayerVote,
+    VoteCounter,
   },
   setup() {
     const subscriptionClient = new SubscriptionClient(process.env.VUE_APP_GRAPH_QL_URL_WS, { reconnect: true });

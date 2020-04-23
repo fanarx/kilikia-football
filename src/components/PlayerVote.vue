@@ -3,11 +3,15 @@
     <span class="text-orange-600 text-lg font-semibold mb-2">Հիմնական</span>
     <ul v-if="votes && votes.votes">
       <li
-        class="flex w-full h-12 cursor-pointer border-b border-gray-300"
+        :class="
+          `flex w-full h-12 cursor-pointer ${
+            user && isActive(vote) ? 'border-b-2 border-gray-600' : 'border-b border-gray-300'
+          }`
+        "
         v-for="vote in votes.votes"
         :key="vote.id + vote.vote"
       >
-        <span class="w-2/5 flex items-center capitalize font-normal">
+        <span :class="`w-2/5 flex items-center capitalize ${user && isActive(vote) ? 'font-bold' : 'font-normal'}`">
           {{ vote.user.name }}
         </span>
         <span class="w-3/5">
@@ -30,7 +34,7 @@
 </template>
 
 <script>
-import { ref, watch } from 'vue';
+import { ref, watch, watchEffect } from 'vue';
 import { useStore } from 'vuex';
 import { useQuery, useSubscription, useMutation } from 'villus';
 import VoteRow from './VoteRow';
@@ -89,6 +93,15 @@ export default {
       }
     );
 
+    watchEffect(() => {
+      if (votesSub.value) {
+        store.commit(
+          'setMainVotes',
+          votesSub.value.votes.map((vote) => vote.vote)
+        );
+      }
+    });
+
     function onVoteUpdate(vote) {
       if (!props.user) return;
       if (props.user.uid === vote.user.id) {
@@ -119,6 +132,10 @@ export default {
       createVoteInput.value = vote.vote;
     }
 
+    function isActive(vote) {
+      return props.user.uid === vote.user.id;
+    }
+
     return {
       data,
       votes: votesSub,
@@ -126,6 +143,7 @@ export default {
       onVoteCreate,
       createVoteInput,
       hasUserVoted,
+      isActive,
     };
   },
 };

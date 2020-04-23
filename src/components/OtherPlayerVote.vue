@@ -19,7 +19,7 @@
     <div
       @click="(e) => e.stopPropagation()"
       v-if="isAddPlayerBoxOpen"
-      class="flex w-full absolute mt-8 p-2 bg-white border border-gray-400 z-40 bg-orange-700"
+      class="flex w-full absolute mt-8 p-2 bg-white border border-gray-400 z-40 bg-gray-200"
     >
       <span class="w-2/5">
         <input
@@ -77,6 +77,7 @@
 
 <script>
 import { reactive, ref, watchEffect } from 'vue';
+import { useStore } from 'vuex';
 import { useSubscription, useMutation } from 'villus';
 import { UPDATE_OTHER_PLAYERS_BY_PK, DELETE_OTHER_PLAYERS_BY_PK, INSERT_OTHER_PLAYERS_ONE } from '../graphql/mutations';
 import { SUBSCRIBE_TO_OTHER_PLAYERS } from '../graphql/subscribtions';
@@ -103,6 +104,8 @@ export default {
     ClickOutside,
   },
   setup(props, { emit }) {
+    const store = useStore();
+
     const { data: otherPlayersSub } = useSubscription({
       query: SUBSCRIBE_TO_OTHER_PLAYERS,
     });
@@ -160,6 +163,13 @@ export default {
 
       if (insertOtherPlayerError.value) {
         isLoading.value = false;
+      }
+
+      if (otherPlayersSub.value) {
+        store.commit(
+          'setOtherPlayerVotes',
+          otherPlayersSub.value.otherPlayers.map((otherPlayer) => otherPlayer.vote)
+        );
       }
     });
 
