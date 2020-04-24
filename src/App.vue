@@ -1,7 +1,7 @@
 <template>
-  <main>
+  <main class="flex justify-center">
     <navbar :user="user"></navbar>
-    <div class="pt-20">
+    <div class="pt-20 w-4/5 flex flex-col">
       <vote-counter />
       <player-vote :user="user" />
       <other-player-vote :user="user" />

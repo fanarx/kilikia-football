@@ -18,8 +18,8 @@
           <vote-row @vote="onVoteUpdate" :vote="vote" />
         </span>
       </li>
-      <li v-if="user && !hasUserVoted" class="flex w-full h-12 cursor-pointer border-b border-gray-300">
-        <span class="w-2/5 flex items-center capitalize font-normal">
+      <li v-if="user && !hasUserVoted" class="flex w-full h-12 cursor-pointer border-b-2 border-gray-600">
+        <span class="w-2/5 flex items-center capitalize font-bold">
           {{ user.email.split('@')[0] }}
         </span>
         <span class="w-3/5">
@@ -36,11 +36,10 @@
 <script>
 import { ref, watch, watchEffect } from 'vue';
 import { useStore } from 'vuex';
-import { useQuery, useSubscription, useMutation } from 'villus';
+import { useSubscription, useMutation } from 'villus';
 import VoteRow from './VoteRow';
-import { GET_USERS } from '../graphql/queries';
 import { INSERT_VOTES, UPDATE_VOTES_BY_PK } from '../graphql/mutations';
-import { SUBSCRIBE_TO_VOTES } from '../graphql/subscribtions';
+import { SUBSCRIBE_TO_VOTES, SUBSCRIBE_TO_USERS } from '../graphql/subscribtions';
 
 export default {
   components: {
@@ -50,8 +49,8 @@ export default {
   setup(props) {
     const store = useStore();
 
-    const { data } = useQuery({
-      query: GET_USERS,
+    const { data } = useSubscription({
+      query: SUBSCRIBE_TO_USERS,
     });
 
     const { data: votesSub } = useSubscription({
@@ -82,6 +81,10 @@ export default {
         if (user && votesSub) {
           votedUserIds = votesSub.votes.map((vote) => vote.user.id);
           hasUserVoted.value = votedUserIds.includes(user.uid);
+
+          if (hasUserVoted.value) {
+            createVoteInput.value = '';
+          }
         }
         if (updateVoteError) {
           votesSub.votes = backupVotesSub;

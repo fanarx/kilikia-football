@@ -6,7 +6,7 @@
       class="flex flex-col overflow-hidden w-48 z-10"
     >
       <div @click="userState.isDropdownOpen = !userState.isDropdownOpen" class="flex h-10 items-center">
-        <span class="w-4/5 cursor-pointer pr-3 text-white text-right pl-2">
+        <span class="w-4/5 cursor-pointer pr-3 text-white text-right pl-2 capitalize">
           {{ userState.selectedUser ? userState.selectedUser.name : 'Log in' }}
         </span>
         <span :class="userState.isDropdownOpen ? 'arrow-up' : 'arrow-down'" />
@@ -26,7 +26,7 @@
               <icon-base v-if="user.is_confirmed" class="w-6 h-6" icon-name="confirmed"><icon-confirmed /></icon-base>
             </span>
 
-            <span class="w-4/5">{{ user.name }}</span>
+            <span class="w-4/5 capitalize">{{ user.name }}</span>
           </li>
         </ul>
       </div>

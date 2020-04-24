@@ -25,3 +25,13 @@ export const SUBSCRIBE_TO_OTHER_PLAYERS = `
       }
     }
 `;
+
+export const SUBSCRIBE_TO_USERS = `
+  subscription subscribeToUsers {
+    users(order_by: {name: asc}) {
+      id
+      name
+      is_confirmed
+    }
+  }
+`;

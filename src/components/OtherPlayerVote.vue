@@ -1,57 +1,59 @@
 <template>
   <div class="flex flex-col mt-10">
-    <!-- <div>
-      <pre>{{ JSON.stringify(user, null, 2) }}</pre>
-    </div> -->
-
-    <div v-click-outside="closeAddPlayerBox" class="flex mb-2">
+    <div v-click-outside="closeAddPlayerBox" class="flex mb-2 relative">
       <div class="flex cursor-pointer items-center" @click="(e) => e.stopPropagation() || toggleAddPlayerBox()">
         <div class="text-orange-600 text-lg font-semibold">Կողքից</div>
-
-        <icon-base class="w-6 h-6 ml-2" icon-name="add player">
+        <icon-base v-if="user" class="w-6 h-6 ml-2" icon-name="add player">
           <icon-minus-active v-if="isAddPlayerBoxOpen" />
           <icon-plus-active v-else />
         </icon-base>
+        <div
+          @click="(e) => e.stopPropagation()"
+          v-if="isAddPlayerBoxOpen"
+          class="flex w-full absolute mt-12 p-2 bg-white border border-gray-400 z-40 bg-gray-200"
+        >
+          <span class="w-2/5">
+            <input
+              @click="() => (addPlayer.vote = null)"
+              :disabled="isLoading"
+              class="w-4/5 border py-2 px-3 text-grey-darkest w-32"
+              type="text"
+              v-model="addPlayer.name"
+              placeholder="Անուն"
+            />
+          </span>
+          <span class="flex w-3/5 relative">
+            <vote-row @vote="handleAddOtherPlayer" :vote="{ vote: addPlayer.vote }" />
+            <div
+              v-if="isLoading"
+              class="flex items-center justify-center bg-white w-full h-full
+            absolute"
+            >
+              <icon-base class="w-6 h-6" icon-name="loading">
+                <icon-spinner-blue />
+              </icon-base>
+            </div>
+          </span>
+        </div>
       </div>
       <div>&nbsp;</div>
-    </div>
-
-    <div
-      @click="(e) => e.stopPropagation()"
-      v-if="isAddPlayerBoxOpen"
-      class="flex w-full absolute mt-8 p-2 bg-white border border-gray-400 z-40 bg-gray-200"
-    >
-      <span class="w-2/5">
-        <input
-          @click="() => (addPlayer.vote = null)"
-          :disabled="isLoading"
-          class="w-4/5 border py-2 px-3 text-grey-darkest w-32"
-          type="text"
-          v-model="addPlayer.name"
-          placeholder="Անուն"
-        />
-      </span>
-      <span class="flex w-3/5 relative">
-        <vote-row @vote="handleAddOtherPlayer" :vote="{ vote: addPlayer.vote }" />
-        <div
-          v-if="isLoading"
-          class="flex items-center justify-center bg-white w-full h-full
-            absolute"
-        >
-          <icon-base class="w-6 h-6" icon-name="loading">
-            <icon-spinner-blue />
-          </icon-base>
-        </div>
-      </span>
     </div>
 
     <div v-if="otherPlayers" class="flex flex-1 flex-col overflow-auto overflow-x-hidden border-b-0">
       <div
         v-for="otherPlayer in otherPlayers.otherPlayers"
         :key="otherPlayer.id"
-        class="flex w-full h-12 border-b border-gray-300"
+        :class="
+          `flex w-full h-12 cursor-pointer ${
+            user && isInvitedByUser(otherPlayer) ? 'border-b-2 border-gray-600' : 'border-b border-gray-300'
+          }`
+        "
       >
-        <span class="w-2/5 flex items-center font-normal capitalize">
+        <span
+          :class="
+            `w-2/5 flex items-center capitalize ${user && isInvitedByUser(otherPlayer) ? 'font-bold' : 'font-normal'}`
+          "
+        >
           {{ otherPlayer.name }}
         </span>
         <span class="w-3/5 flex relative">
@@ -62,11 +64,10 @@
           <span class="absolute top-0 right-0 mt-1">
             <icon-base
               v-if="user && otherPlayer.invitedBy.name === user.email.split('@')[0]"
-              @click="() => handleOtherPlayerDelete(otherPlayer)"
               class="w-6 h-6 cursor-pointer"
               icon-name="delete"
             >
-              <icon-close-red />
+              <icon-close-red @click="() => handleOtherPlayerDelete(otherPlayer)" />
             </icon-base>
           </span>
         </span>
@@ -227,6 +228,10 @@ export default {
       executeInsertOtherPlayer(addPlayer);
     }
 
+    function isInvitedByUser(otherPlayer) {
+      return props.user.uid === otherPlayer.invitedBy.id;
+    }
+
     return {
       emit,
       addPlayer,
@@ -237,6 +242,7 @@ export default {
       handleVoteUpdate,
       handleOtherPlayerDelete,
       handleAddOtherPlayer,
+      isInvitedByUser,
       otherPlayers: otherPlayersSub,
     };
   },

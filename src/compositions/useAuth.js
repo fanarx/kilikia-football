@@ -57,7 +57,6 @@ export default function() {
   });
   watch(mutationData, () => {
     if (mutationData.value) {
-      console.log('***: mutationData.value', mutationData.value);
       store.commit('makeUserConfirmed', {
         userId: mutationData.value.update_users.returning[0].id,
         userName: mutationData.value.update_users.returning[0].name,

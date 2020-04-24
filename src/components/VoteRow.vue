@@ -2,7 +2,7 @@
   <div class="flex w-full items-center h-12">
     <icon-base
       @click="emit('vote', { ...vote, vote: 'YES' })"
-      class="w-8 h-8 mr-4 sm:mr-6 cursor-pointer"
+      class="w-8 h-8 mr-2 sm:mr-6 cursor-pointer"
       icon-name="yes"
     >
       <icon-yes-active v-if="vote.vote === 'YES'" />
@@ -10,7 +10,7 @@
     </icon-base>
     <icon-base
       @click="emit('vote', { ...vote, vote: 'NO' })"
-      class="w-8 h-8 mr-4 sm:mr-6 cursor-pointer"
+      class="w-8 h-8 mr-2 sm:mr-6 cursor-pointer"
       icon-name="no"
     >
       <icon-no-active v-if="vote.vote === 'NO'" />

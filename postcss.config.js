@@ -3,11 +3,7 @@ const purgecss = require('@fullhuman/postcss-purgecss')({
   content: ['./public/**/*.html', './src/**/*.vue'],
   extractors: [
     {
-      extractor: class TailwindExtractor {
-        static extract(content) {
-          return content.match(/[A-z0-9-:\/]+/g) || [];
-        }
-      },
+      extractor: (content) => content.match(/[A-z0-9-:\/]+/g) || [],
       extensions: ['vue'],
     },
   ],
