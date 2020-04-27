@@ -23,7 +23,9 @@
             @click.stop="handleUserSelect(user)"
           >
             <span class="w-1/5 inline-block">
-              <icon-base v-if="user.is_confirmed" class="w-6 h-6" icon-name="confirmed"><icon-confirmed /></icon-base>
+              <icon-base v-if="user.is_confirmed" class="w-6 h-6" icon-name="confirmed">
+                <icon-confirmed />
+              </icon-base>
             </span>
 
             <span class="w-4/5 capitalize">{{ user.name }}</span>
@@ -55,7 +57,9 @@
           @click="signUp"
           :disabled="!doPasswordsMatch || !isValid || userState.isLoading"
         >
-          <icon-base v-if="userState.isLoading" class="w-6 h-6" icon-name="loading..."><icon-spinner /></icon-base>
+          <icon-base v-if="userState.isLoading" class="w-6 h-6" icon-name="loading...">
+            <icon-spinner />
+          </icon-base>
           <span v-else>Sign up</span>
         </button>
         <button
@@ -65,7 +69,9 @@
           @click="logIn"
           :disabled="!isValid || userState.isLoading"
         >
-          <icon-base v-if="userState.isLoading" class="w-6 h-6" icon-name="loading..."><icon-spinner /></icon-base>
+          <icon-base v-if="userState.isLoading" class="w-6 h-6" icon-name="loading...">
+            <icon-spinner />
+          </icon-base>
           <span v-else>Login</span>
         </button>
         <p class="text-red-500">{{ error }}</p>
@@ -133,10 +139,6 @@ export default {
       userState.isLoading = true;
       try {
         await authState.signupWithEmail();
-        userState.isLoading = false;
-        if (!authState.error) {
-          closeDropDown();
-        }
       } catch (e) {
         userState.isLoading = false;
       }
@@ -146,10 +148,6 @@ export default {
       userState.isLoading = true;
       try {
         await authState.loginWithEmail();
-        userState.isLoading = false;
-        if (!authState.error) {
-          closeDropDown();
-        }
       } catch (e) {
         userState.isLoading = false;
       }
