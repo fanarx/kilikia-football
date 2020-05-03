@@ -90,9 +90,14 @@ export default function() {
   //let callback = null;
   //let metadataRef = null;
 
+  let callback = null;
+  let metadataRef = null;
   firebase.auth().onAuthStateChanged(async (user) => {
+    if (callback) {
+      metadataRef.off('value', callback);
+    }
     if (user) {
-      const token = await user.getIdToken();
+      const token = await user.getIdToken(true);
       const idTokenResult = await user.getIdTokenResult();
       const hasuraClaim = idTokenResult.claims['https://hasura.io/jwt/claims'];
 
@@ -102,9 +107,10 @@ export default function() {
       } else {
         // Check if refresh is required.
 
-        const metadataRef = firebase.database().ref('metadata/' + user.uid + '/refreshTime');
+        metadataRef = firebase.database().ref('metadata/' + user.uid + '/refreshTime');
 
-        const callback = async () => {
+        callback = async (data) => {
+          if (!data.exists) return;
           // Force refresh to pick up the latest custom claims changes.
           const token = await user.getIdToken(true);
           state.user = user;
@@ -117,7 +123,7 @@ export default function() {
 
           execute(variables);
         };
-        metadataRef.once('value', callback);
+        metadataRef.on('value', callback);
       }
     } else {
       state.user = null;

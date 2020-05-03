@@ -75,7 +75,7 @@ export default {
     watch(
       [() => props.user, votesSub, data, updateVoteError, insertVotesError],
       ([user, votesSub, data, updateVoteError, insertVotesError]) => {
-        if (data && store.state.users.length === 0) {
+        if (data) {
           store.commit('setUsers', data.users);
         }
         if (user && votesSub) {
